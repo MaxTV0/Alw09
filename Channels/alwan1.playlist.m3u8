@@ -1,75 +1,31 @@
-#!/usr/bin/env python3
-"""
-مولّد HLS Live ديناميكي
-- يحدّث EXT-X-PROGRAM-DATE-TIME تلقائياً بالوقت الحقيقي
-- ينقل MEDIA-SEQUENCE مع كل مقطع جديد
-- نافذة متجددة (Sliding Window) بدل قائمة ثابتة
-"""
+#EXTM3U
+#EXT-X-VERSION:6
+#EXT-X-TARGETDURATION:11
+#EXT-X-MEDIA-SEQUENCE:3670
+#EXT-X-PLAYLIST-TYPE:EVENT
+#EXT-X-INDEPENDENT-SEGMENTS
+#EXT-X-SERVER-CONTROL:CAN-SKIP-UNTIL=30.0,CAN-BLOCK-RELOAD=YES
 
-import time
-from datetime import datetime, timezone, timedelta
-from pathlib import Path
+#EXT-X-PROGRAM-DATE-TIME:2026-10-09T19:00:00.000Z
+#EXTINF:10.040056,
+/hls/f4579ff9ed75d3fe957f92ae3838c5d4/738894_3670.ts
 
-# ============ الإعدادات ============
-OUT_FILE        = Path("stream.m3u8")
-SEG_DUR         = 10.0                    # مدة المقطع (ثواني)
-WINDOW          = 6                       # عدد المقاطع في القائمة
-TARGET_DURATION = 11                      # أقصى مدة مقرّبة لأعلى
-CAN_SKIP_UNTIL  = 66                      # ثواني
-START_OFFSET    = -22.0                   # سالب = من نهاية القائمة (لحافة البث)
-UNIQUE_BASE     = 1791563373700074389     # أول رقم في سلسلة الأسماء
-SEG_EXT         = "ts?type=event"
+#EXT-X-PROGRAM-DATE-TIME:2026-10-09T19:00:10.040Z
+#EXTINF:10.040089,
+/hls/1fd81565b679f5799d6669c6ab5b672d/738894_3671.ts
 
+#EXT-X-PROGRAM-DATE-TIME:2026-10-09T19:00:20.080Z
+#EXTINF:9.560089,
+/hls/1112b3d701be8187b43e15bec44e3f05/738894_3672.ts
 
-def iso(dt: datetime) -> str:
-    """تنسيق ISO8601 مطابق لـ HLS."""
-    return (dt.astimezone(timezone.utc)
-              .strftime("%Y-%m-%dT%H:%M:%S.")
-            + f"{dt.microsecond // 1000:03d}Z")
+#EXT-X-PROGRAM-DATE-TIME:2026-10-09T19:00:29.640Z
+#EXTINF:10.040056,
+/hls/52ad941ee6be9f5fc1a157c25665be83/738894_3673.ts
 
+#EXT-X-PROGRAM-DATE-TIME:2026-10-09T19:00:39.680Z
+#EXTINF:10.040011,
+/hls/305fe038ade8b7fff60548fbff3e7620/738894_3674.ts
 
-def build_playlist(media_sequence: int, epoch: datetime) -> str:
-    """
-    media_sequence : رقم أول مقطع في النافذة (يتغير ديناميكياً)
-    epoch          : لحظة انطلاق البث (ثابتة عبر التشغيلات)
-    """
-    lines = [
-        "#EXTM3U",
-        "#EXT-X-VERSION:6",
-        f"#EXT-X-TARGETDURATION:{TARGET_DURATION}",
-        f"#EXT-X-SERVER-CONTROL:CAN-SKIP-UNTIL={CAN_SKIP_UNTIL},CAN-BLOCK-RELOAD=YES",
-        f"#EXT-X-START:TIME-OFFSET={START_OFFSET:.2f}",
-        "#EXT-X-INDEPENDENT-SEGMENTS",
-        f"#EXT-X-MEDIA-SEQUENCE:{media_sequence}",
-    ]
-
-    for i in range(WINDOW):
-        idx = media_sequence + i
-        pdt = epoch + timedelta(seconds=SEG_DUR * idx)
-        uid = UNIQUE_BASE + idx
-        lines.append(f"#EXT-X-PROGRAM-DATE-TIME:{iso(pdt)}")
-        lines.append(f"#EXTINF:{SEG_DUR:.3f},")
-        lines.append(f"chunk_{uid}_{idx}_a.{SEG_EXT}")
-
-    return "\n".join(lines) + "\n"
-
-
-def main():
-    # لحظة البداية - ثابتة طول التشغيل
-    epoch = datetime.now(timezone.utc).replace(microsecond=0)
-    seq   = 0
-
-    print("▶ تشغيل المولّد الديناميكي… (Ctrl+C للإيقاف)")
-    try:
-        while True:
-            OUT_FILE.write_text(build_playlist(seq, epoch), encoding="utf-8")
-            print(f"[{iso(datetime.now(timezone.utc))}] "
-                  f"media_sequence={seq}  |  نافذة: {seq}..{seq + WINDOW - 1}")
-            seq += 1
-            time.sleep(SEG_DUR)          # ننتظر وصول مقطع جديد
-    except KeyboardInterrupt:
-        print("\n⏹ تم الإيقاف.")
-
-
-if __name__ == "__main__":
-    main()
+#EXT-X-PROGRAM-DATE-TIME:2026-10-09T19:00:49.720Z
+#EXTINF:10.040056,
+/hls/4c33f3648cbc500768a2ecf1cf319a70/738894_3675.ts
